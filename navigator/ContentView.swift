@@ -10,44 +10,53 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Query(sort: \Item.title) private var items: [Item]
+    @State private var searchText = ""
+    @State private var showingNewItem = false
+    @State private var selectedItem: Item?
 
-    var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-            .toolbar {
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
+    private var filteredItems: [Item] {
+        if searchText.isEmpty { return items }
+        return items.filter { item in
+            item.title.localizedCaseInsensitiveContains(searchText) ||
+            item.tags.contains(where: { $0.name.localizedCaseInsensitiveContains(searchText) })
         }
     }
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
+    var body: some View {
+        NavigationSplitView {
+            List(selection: $selectedItem) {
+                ForEach(filteredItems) { item in
+                    ItemRowView(item: item)
+                        .tag(item)
+                }
+                .onDelete(perform: deleteItems)
+            }
+            .navigationTitle("Items")
+            .toolbar {
+                Button(action: { showingNewItem = true }) {
+                    Label("Add Item", systemImage: "plus")
+                }
+            }
+            .searchable(text: $searchText)
+        } detail: {
+            if let selectedItem {
+                ItemDetailView(item: selectedItem)
+            } else {
+                Text("Select an item")
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .sheet(isPresented: $showingNewItem) {
+            ItemEditView()
         }
     }
 
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+            let toDelete = offsets.map { filteredItems[$0] }
+            for item in toDelete {
+                modelContext.delete(item)
             }
         }
     }
@@ -55,5 +64,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: Item.self, Tag.self, inMemory: true)
 }
