@@ -13,6 +13,9 @@ struct navigatorApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
+            Scene.self,
+            Performer.self,
+            FileReference.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
