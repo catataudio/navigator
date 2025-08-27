@@ -1,59 +1,63 @@
-//
-//  ContentView.swift
-//  navigator
-//
-//  Created by Frederick Arciniegas on 8/26/25.
-//
-
 import SwiftUI
 import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Query private var metadataItems: [Metadata]
+    @State private var isLoading = false
+    @State private var errorMessage: String?
 
     var body: some View {
         NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+            Group {
+                if isLoading {
+                    ProgressView()
+                } else {
+                    List(metadataItems) { item in
+                        VStack(alignment: .leading) {
+                            Text(item.title).font(.headline)
+                            Text(item.details).font(.subheadline)
+                        }
                     }
                 }
-                .onDelete(perform: deleteItems)
             }
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)
             .toolbar {
                 ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                    Button("Reload") {
+                        Task { await loadMetadata() }
                     }
                 }
             }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+            .task {
+                await loadMetadata()
             }
+            .alert("Error", isPresented: .constant(errorMessage != nil), actions: {
+                Button("OK", role: .cancel) { errorMessage = nil }
+            }, message: {
+                if let errorMessage { Text(errorMessage) }
+            })
+        } detail: {
+            Text("Select a metadata item")
+        }
+    }
+
+    private func loadMetadata() async {
+        isLoading = true
+        defer { isLoading = false }
+        let service = MetadataService()
+        do {
+            let items = try await service.fetchMetadata()
+            for item in items {
+                modelContext.insert(item)
+            }
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: Metadata.self, inMemory: true)
 }

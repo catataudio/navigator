@@ -1,10 +1,3 @@
-//
-//  navigatorApp.swift
-//  navigator
-//
-//  Created by Frederick Arciniegas on 8/26/25.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -12,7 +5,7 @@ import SwiftData
 struct navigatorApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Metadata.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
