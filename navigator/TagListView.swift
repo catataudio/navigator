@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct TagListView: View {
     var tags: [Tag]
@@ -20,5 +21,9 @@ struct TagListView: View {
 
 #Preview {
     TagListView(tags: [Tag(name: "one"), Tag(name: "two")])
-        .modelContainer(for: Item.self, Tag.self, inMemory: true)
+        .modelContainer(
+            for: [Item.self, Tag.self],
+            inMemory: true,
+            isAutosaveEnabled: true
+        )
 }

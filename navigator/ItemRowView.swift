@@ -21,5 +21,5 @@ struct ItemRowView: View {
 
 #Preview {
     ItemRowView(item: Item(title: "Sample", detail: "Demo", tags: [Tag(name: "tag")] ))
-        .modelContainer(for: Item.self, Tag.self, inMemory: true)
+        .modelContainer(for: [Item.self, Tag.self], inMemory: true)
 }

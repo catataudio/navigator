@@ -60,5 +60,5 @@ struct ItemEditView: View {
 
 #Preview {
     ItemEditView()
-        .modelContainer(for: Item.self, Tag.self, inMemory: true)
+        .modelContainer(for: [Item.self, Tag.self], inMemory: true)
 }

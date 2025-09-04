@@ -24,13 +24,14 @@ struct TagEditorView: View {
     }
 }
 
-#Preview {
-    struct PreviewWrapper: View {
-        @State var tags: [Tag] = []
-        var body: some View {
-            TagEditorView(tags: $tags)
-        }
+private struct TagEditorPreviewWrapper: View {
+    @State var tags: [Tag] = []
+    var body: some View {
+        TagEditorView(tags: $tags)
     }
-    return PreviewWrapper()
-        .modelContainer(for: Item.self, Tag.self, inMemory: true)
+}
+
+#Preview {
+    TagEditorPreviewWrapper()
+        .modelContainer(for: [Item.self, Tag.self], inMemory: true)
 }

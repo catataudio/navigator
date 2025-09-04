@@ -64,5 +64,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, Tag.self, inMemory: true)
+        .modelContainer(for: [Item.self, Tag.self], inMemory: true)
 }

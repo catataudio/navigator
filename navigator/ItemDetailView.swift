@@ -40,6 +40,10 @@ struct ItemDetailView: View {
 
 #Preview {
     let item = Item(title: "Sample", detail: "Example item", tags: [Tag(name: "swift")])
-    return ItemDetailView(item: item)
-        .modelContainer(for: Item.self, Tag.self, inMemory: true)
+    ItemDetailView(item: item)
+        .modelContainer(
+            for: [Item.self, Tag.self],
+            inMemory: true,
+            isAutosaveEnabled: true
+        )
 }
